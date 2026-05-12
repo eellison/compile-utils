@@ -1,0 +1,18 @@
+{
+  "hash": "f2b19635d2cc_b746cb55",
+  "ops": [
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.neg.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.sum.dim_IntList",
+    "prims.convert_element_type.default",
+    "prims.fma.default"
+  ],
+  "reduction_types": [
+    "sum"
+  ],
+  "num_kernels": 9
+}

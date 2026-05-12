@@ -1,0 +1,20 @@
+{
+  "hash": "35deec51cf28_a53551b1",
+  "ops": [
+    "aten.clone.default",
+    "aten.permute.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 5,
+  "perf": {
+    "B200": {
+      "compiled_us": 35.8,
+      "coord_descent_us": 35.4,
+      "memcpy_sol_us": 33.4,
+      "total_bytes": 100663296
+    }
+  }
+}

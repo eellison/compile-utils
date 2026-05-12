@@ -1,0 +1,25 @@
+{
+  "hash": "36490c41a058_a53551b1",
+  "ops": [
+    "aten.clone.default",
+    "aten.permute.default",
+    "aten.permute.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.sum.dim_IntList"
+  ],
+  "reduction_types": [
+    "sum"
+  ],
+  "num_kernels": 8,
+  "perf": {
+    "B200": {
+      "compiled_us": 53.9,
+      "coord_descent_us": 54.8,
+      "memcpy_sol_us": 35.6,
+      "total_bytes": 100666368
+    }
+  }
+}

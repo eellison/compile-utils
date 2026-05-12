@@ -1,0 +1,17 @@
+{
+  "hash": "d18ac1f3869a_9eabb924",
+  "ops": [
+    "aten.cat.default",
+    "aten.full.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 2,
+  "perf": {
+    "B200": {
+      "compiled_us": 35.4,
+      "coord_descent_us": 33.8,
+      "memcpy_sol_us": 5.4,
+      "total_bytes": 244184
+    }
+  }
+}

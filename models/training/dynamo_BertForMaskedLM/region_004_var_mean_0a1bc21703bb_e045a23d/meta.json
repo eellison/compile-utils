@@ -1,0 +1,26 @@
+{
+  "hash": "0a1bc21703bb_e045a23d",
+  "ops": [
+    "<built-in function getitem>",
+    "<built-in function getitem>",
+    "aten.add.Tensor",
+    "aten.erf.default",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.reshape.default",
+    "aten.var_mean.correction"
+  ],
+  "reduction_types": [
+    "var_mean"
+  ],
+  "num_kernels": 9,
+  "perf": {
+    "B200": {
+      "compiled_us": 41.2,
+      "coord_descent_us": 36.1,
+      "memcpy_sol_us": 15.7,
+      "total_bytes": 50462720
+    }
+  }
+}

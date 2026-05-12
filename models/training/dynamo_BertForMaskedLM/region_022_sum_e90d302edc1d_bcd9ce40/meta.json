@@ -1,0 +1,34 @@
+{
+  "hash": "e90d302edc1d_bcd9ce40",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.erf.default",
+    "aten.exp.default",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.permute.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.sum.dim_IntList"
+  ],
+  "reduction_types": [
+    "sum"
+  ],
+  "num_kernels": 17,
+  "perf": {
+    "B200": {
+      "compiled_us": 115.8,
+      "coord_descent_us": 115.9,
+      "memcpy_sol_us": 188.2,
+      "total_bytes": 603992064
+    }
+  }
+}
