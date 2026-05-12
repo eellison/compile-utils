@@ -1,0 +1,15 @@
+{
+  "hash": "15cb6a8569fa_88016393",
+  "ops": [
+    "aten.mul.Tensor",
+    "aten.neg.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.sum.dim_IntList",
+    "prims.fma.default"
+  ],
+  "reduction_types": [
+    "sum"
+  ],
+  "num_kernels": 6
+}

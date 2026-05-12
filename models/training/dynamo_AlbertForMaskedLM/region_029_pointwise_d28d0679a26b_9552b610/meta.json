@@ -1,0 +1,26 @@
+{
+  "hash": "d28d0679a26b_9552b610",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.add.Tensor"
+  ],
+  "reduction_types": [],
+  "num_kernels": 11,
+  "perf": {
+    "B200": {
+      "compiled_us": 483.3,
+      "coord_descent_us": 483.4,
+      "memcpy_sol_us": 1076.7,
+      "total_bytes": 3489660928
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "hash": "eb4fe3ac03e0_d46ab65d",
+  "ops": [
+    "aten.amax.default",
+    "aten.div.Tensor",
+    "aten.exp.default",
+    "aten.full.default",
+    "aten.full.default",
+    "aten.gather.default",
+    "aten.log.default",
+    "aten.ne.Scalar",
+    "aten.ne.Scalar",
+    "aten.ne.Scalar",
+    "aten.neg.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.squeeze.dim",
+    "aten.sub.Tensor",
+    "aten.sub.Tensor",
+    "aten.sum.default",
+    "aten.sum.default",
+    "aten.sum.dim_IntList",
+    "aten.unsqueeze.default",
+    "aten.where.self",
+    "aten.where.self",
+    "prims.convert_element_type.default"
+  ],
+  "reduction_types": [
+    "amax",
+    "sum",
+    "sum",
+    "sum"
+  ],
+  "num_kernels": 24,
+  "perf": {
+    "B200": {
+      "compiled_us": 342.4,
+      "coord_descent_us": 168.9,
+      "memcpy_sol_us": 155.4,
+      "total_bytes": 491552772
+    }
+  }
+}

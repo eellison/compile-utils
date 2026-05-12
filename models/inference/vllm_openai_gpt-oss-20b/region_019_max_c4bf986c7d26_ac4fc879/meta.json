@@ -1,0 +1,32 @@
+{
+  "hash": "c4bf986c7d26_ac4fc879",
+  "ops": [
+    "<built-in function getitem>",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.bitwise_and.Tensor",
+    "aten.bitwise_and.Tensor",
+    "aten.cat.default",
+    "aten.expand.default",
+    "aten.expand.default",
+    "aten.expand.default",
+    "aten.full.default",
+    "aten.full.default",
+    "aten.full.default",
+    "aten.gt.Tensor",
+    "aten.le.Tensor",
+    "aten.max.dim",
+    "aten.mul.Tensor",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.sub.Tensor",
+    "aten.where.self",
+    "prims.iota.default"
+  ],
+  "reduction_types": [
+    "max"
+  ],
+  "num_kernels": 23
+}

@@ -1,0 +1,17 @@
+{
+  "hash": "06cf88744b2f_d89c6bfa",
+  "ops": [
+    "aten.reshape.default",
+    "prims.convert_element_type.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 2,
+  "perf": {
+    "B200": {
+      "compiled_us": 33.6,
+      "coord_descent_us": 33.2,
+      "memcpy_sol_us": 29.6,
+      "total_bytes": 88080384
+    }
+  }
+}

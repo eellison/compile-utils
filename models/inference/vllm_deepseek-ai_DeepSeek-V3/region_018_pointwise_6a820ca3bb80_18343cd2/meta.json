@@ -1,0 +1,21 @@
+{
+  "hash": "6a820ca3bb80_18343cd2",
+  "ops": [
+    "<built-in function getitem>",
+    "<built-in function getitem>",
+    "aten.permute.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.split_with_sizes.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 6,
+  "perf": {
+    "B200": {
+      "compiled_us": 33.4,
+      "coord_descent_us": 34.5,
+      "memcpy_sol_us": 64.3,
+      "total_bytes": 201326592
+    }
+  }
+}

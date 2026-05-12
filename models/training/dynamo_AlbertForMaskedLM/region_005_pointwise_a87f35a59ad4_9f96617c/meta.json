@@ -1,0 +1,25 @@
+{
+  "hash": "a87f35a59ad4_9f96617c",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.pow.Tensor_Scalar",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.tanh.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 10,
+  "perf": {
+    "B200": {
+      "compiled_us": 79.1,
+      "coord_descent_us": 79.0,
+      "memcpy_sol_us": 174.3,
+      "total_bytes": 536870912
+    }
+  }
+}

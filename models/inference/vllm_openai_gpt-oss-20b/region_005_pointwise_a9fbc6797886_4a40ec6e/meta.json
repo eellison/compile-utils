@@ -1,0 +1,18 @@
+{
+  "hash": "a9fbc6797886_4a40ec6e",
+  "ops": [
+    "<built-in function getitem>",
+    "<built-in function getitem>",
+    "aten.topk.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 3,
+  "perf": {
+    "B200": {
+      "compiled_us": 47.5,
+      "coord_descent_us": 45.9,
+      "memcpy_sol_us": 5.1,
+      "total_bytes": 360448
+    }
+  }
+}

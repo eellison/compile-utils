@@ -1,0 +1,122 @@
+"""
+Standalone reduction kernel repro.
+Extracted from inductor compilation.
+
+Reduction info:
+#   type=mean, ranges=['4', '512', '1'], reduction_ranges=[]
+#   origins: ['aten.mean.dim']
+"""
+import torch
+import torch._inductor.config as inductor_config
+
+# The extracted FX graph subgraph:
+class Repro(torch.nn.Module):
+    def forward(self, mm_52: "bf16[2048, 4096]", add_49: "bf16[4, 512, 4096]", arg71_1: "bf16[4096]"):
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:182 in forward, code: attn_output = self.o_proj(attn_output)
+        reshape_default: "bf16[4, 512, 4096]" = torch.ops.aten.reshape.default(mm_52, [4, 512, 4096]);  mm_52 = None
+
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:241 in forward, code: hidden_states = residual + hidden_states
+        add_tensor: "bf16[4, 512, 4096]" = torch.ops.aten.add.Tensor(add_49, reshape_default);  add_49 = reshape_default = None
+
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:198 in forward, code: hidden_states = hidden_states.to(torch.float32)
+        convert_element_type_default: "f32[4, 512, 4096]" = torch.ops.prims.convert_element_type.default(add_tensor, torch.float32);  add_tensor = None
+
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:199 in forward, code: variance = hidden_states.pow(2).mean(-1, keepdim=True)
+        pow_tensor_scalar: "f32[4, 512, 4096]" = torch.ops.aten.pow.Tensor_Scalar(convert_element_type_default, 2)
+        mean_dim: "f32[4, 512, 1]" = torch.ops.aten.mean.dim(pow_tensor_scalar, [-1], True);  pow_tensor_scalar = None
+
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:200 in forward, code: hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+        add_tensor_1: "f32[4, 512, 1]" = torch.ops.aten.add.Tensor(mean_dim, 1e-05);  mean_dim = None
+        rsqrt_default: "f32[4, 512, 1]" = torch.ops.aten.rsqrt.default(add_tensor_1);  add_tensor_1 = None
+        mul_tensor: "f32[4, 512, 4096]" = torch.ops.aten.mul.Tensor(convert_element_type_default, rsqrt_default);  convert_element_type_default = rsqrt_default = None
+
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:201 in forward, code: return self.weight * hidden_states.to(input_dtype)
+        convert_element_type_default_1: "bf16[4, 512, 4096]" = torch.ops.prims.convert_element_type.default(mul_tensor, torch.bfloat16);  mul_tensor = None
+        mul_tensor_1: "bf16[4, 512, 4096]" = torch.ops.aten.mul.Tensor(arg71_1, convert_element_type_default_1);  arg71_1 = convert_element_type_default_1 = None
+
+        # File: /home/dev/.conda/envs/pytorch-work-b200/lib/python3.12/site-packages/transformers/models/mistral/modeling_mistral.py:47 in forward, code: down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
+        reshape_default_1: "bf16[2048, 4096]" = torch.ops.aten.reshape.default(mul_tensor_1, [2048, 4096])
+        reshape_default_2: "bf16[2048, 4096]" = torch.ops.aten.reshape.default(mul_tensor_1, [2048, 4096]);  mul_tensor_1 = None
+        return (reshape_default_1, reshape_default_2)
+
+
+
+def make_inputs():
+    return [
+    torch.randn([2048, 4096], dtype=torch.bfloat16, device='cuda'),
+    torch.randn([4, 512, 4096], dtype=torch.bfloat16, device='cuda'),
+    torch.randn([4096], dtype=torch.bfloat16, device='cuda'),
+    ]
+
+
+def _count_bytes(inputs, outputs):
+    """Count total read + write bytes for SOL calculation."""
+    total = 0
+    for t in inputs:
+        if isinstance(t, torch.Tensor):
+            total += t.nelement() * t.element_size()
+    if isinstance(outputs, torch.Tensor):
+        total += outputs.nelement() * outputs.element_size()
+    elif isinstance(outputs, (tuple, list)):
+        for o in outputs:
+            if isinstance(o, torch.Tensor):
+                total += o.nelement() * o.element_size()
+    return total
+
+
+def benchmark(n_warmup=25, n_rep=200):
+    from triton.testing import do_bench
+
+    mod = Repro()
+    inputs = make_inputs()
+
+    with torch.no_grad():
+        eager_out = mod(*inputs)
+
+    total_bytes = _count_bytes(inputs, eager_out)
+
+    # SOL: memcopy same total bytes (copy half since copy does read+write)
+    copy_elems = max(total_bytes // (2 * 4), 256)
+    src = torch.empty(copy_elems, dtype=torch.float32, device="cuda")
+    dst = torch.empty_like(src)
+    sol_ms = do_bench(lambda: dst.copy_(src), warmup=n_warmup, rep=n_rep)
+    sol_us = sol_ms * 1000
+    del src, dst
+
+    # Compiled (default heuristics)
+    compiled = torch.compile(mod)
+    with torch.no_grad():
+        for _ in range(3):
+            compiled(*inputs)
+        torch.cuda.synchronize()
+    compiled_ms = do_bench(lambda: compiled(*inputs), warmup=n_warmup, rep=n_rep)
+    compiled_us = compiled_ms * 1000
+
+    # Compiled with coordinate descent tuning
+    inductor_config.coordinate_descent_tuning = True
+    torch._dynamo.reset()
+    compiled_cd = torch.compile(mod)
+    with torch.no_grad():
+        for _ in range(3):
+            compiled_cd(*inputs)
+        torch.cuda.synchronize()
+    cd_ms = do_bench(lambda: compiled_cd(*inputs), warmup=n_warmup, rep=n_rep)
+    cd_us = cd_ms * 1000
+
+    print(f"\nKernel data: {total_bytes / 1024:.1f} KB (read+write)")
+    print(f"Memcopy SOL (same size): {sol_us:8.1f} us")
+    print(f"Compiled (default):      {compiled_us:8.1f} us")
+    print(f"Compiled (coord desc):   {cd_us:8.1f} us")
+    print(f"Gap (default / SOL):     {compiled_us / sol_us:8.2f}x")
+    print(f"Gap (CD / SOL):          {cd_us / sol_us:8.2f}x")
+
+    return {
+        "compiled_us": compiled_us,
+        "coord_descent_us": cd_us,
+        "memcopy_sol_us": sol_us,
+        "total_bytes": total_bytes,
+    }
+
+
+if __name__ == "__main__":
+    benchmark()

@@ -1,0 +1,19 @@
+{
+  "hash": "5dcd159fff4a_4f4e1f24",
+  "ops": [
+    "<built-in function getitem>",
+    "aten.bitwise_not.default",
+    "aten.clone.default",
+    "aten.expand.default",
+    "aten.full.default",
+    "aten.full.default",
+    "aten.reshape.default",
+    "aten.scatter.value",
+    "aten.topk.default",
+    "aten.unsqueeze.default",
+    "aten.where.self",
+    "prims.convert_element_type.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 12
+}

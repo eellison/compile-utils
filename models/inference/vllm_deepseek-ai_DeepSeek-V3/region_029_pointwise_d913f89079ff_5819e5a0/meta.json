@@ -1,0 +1,17 @@
+{
+  "hash": "d913f89079ff_5819e5a0",
+  "ops": [
+    "aten.permute.default",
+    "prims.convert_element_type.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 2,
+  "perf": {
+    "B200": {
+      "compiled_us": 37.7,
+      "coord_descent_us": 37.9,
+      "memcpy_sol_us": 4.1,
+      "total_bytes": 11010048
+    }
+  }
+}

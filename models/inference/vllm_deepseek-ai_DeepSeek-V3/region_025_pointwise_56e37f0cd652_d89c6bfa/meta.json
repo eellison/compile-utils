@@ -1,0 +1,16 @@
+{
+  "hash": "56e37f0cd652_d89c6bfa",
+  "ops": [
+    "aten.reshape.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 1,
+  "perf": {
+    "B200": {
+      "compiled_us": 25.4,
+      "coord_descent_us": 24.7,
+      "memcpy_sol_us": 20.2,
+      "total_bytes": 58720256
+    }
+  }
+}

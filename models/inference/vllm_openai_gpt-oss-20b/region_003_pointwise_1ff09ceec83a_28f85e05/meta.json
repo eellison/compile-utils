@@ -1,0 +1,27 @@
+{
+  "hash": "1ff09ceec83a_28f85e05",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.clamp_max.default",
+    "aten.clamp_max.default",
+    "aten.clamp_min.default",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.sigmoid.default",
+    "aten.slice.Tensor",
+    "aten.slice.Tensor",
+    "aten.unsqueeze.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 12,
+  "perf": {
+    "B200": {
+      "compiled_us": 429.7,
+      "coord_descent_us": 433.4,
+      "memcpy_sol_us": 748.8,
+      "total_bytes": 2265661440
+    }
+  }
+}

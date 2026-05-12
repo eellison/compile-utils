@@ -1,0 +1,16 @@
+{
+  "hash": "8206ef619f2b_0601ce87",
+  "ops": [
+    "aten.permute.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 1,
+  "perf": {
+    "B200": {
+      "compiled_us": 25.3,
+      "coord_descent_us": 24.1,
+      "memcpy_sol_us": 306.8,
+      "total_bytes": 622329856
+    }
+  }
+}

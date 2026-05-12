@@ -1,0 +1,20 @@
+{
+  "hash": "0a44c4081351_fe10a6a0",
+  "ops": [
+    "<built-in function getitem>",
+    "<built-in function getitem>",
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.embedding.default",
+    "aten.embedding.default",
+    "aten.embedding.default",
+    "aten.expand.default",
+    "aten.expand.default",
+    "aten.gather.default",
+    "aten.var_mean.correction"
+  ],
+  "reduction_types": [
+    "var_mean"
+  ],
+  "num_kernels": 11
+}

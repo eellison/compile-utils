@@ -1,0 +1,22 @@
+{
+  "hash": "83f179fd0c25_372672e9",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.div.Tensor",
+    "aten.gather.default",
+    "aten.mul.Tensor",
+    "aten.sum.dim_IntList"
+  ],
+  "reduction_types": [
+    "sum"
+  ],
+  "num_kernels": 5,
+  "perf": {
+    "B200": {
+      "compiled_us": 39.1,
+      "coord_descent_us": 38.8,
+      "memcpy_sol_us": 4.4,
+      "total_bytes": 2293760
+    }
+  }
+}

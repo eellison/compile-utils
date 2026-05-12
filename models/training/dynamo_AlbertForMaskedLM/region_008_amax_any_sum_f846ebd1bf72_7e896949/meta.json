@@ -1,0 +1,29 @@
+{
+  "hash": "f846ebd1bf72_7e896949",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.amax.default",
+    "aten.any.dim",
+    "aten.div.Tensor",
+    "aten.eq.Scalar",
+    "aten.exp.default",
+    "aten.expand.default",
+    "aten.full.default",
+    "aten.full.default",
+    "aten.full.default",
+    "aten.logical_not.default",
+    "aten.logical_not.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.sub.Tensor",
+    "aten.sum.dim_IntList",
+    "aten.where.self",
+    "aten.where.self"
+  ],
+  "reduction_types": [
+    "any",
+    "amax",
+    "sum"
+  ],
+  "num_kernels": 18
+}

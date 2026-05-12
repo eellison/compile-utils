@@ -1,0 +1,27 @@
+{
+  "hash": "db9ac2d6abc4_fe0520d3",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.mean.dim",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.pow.Tensor_Scalar",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.rsqrt.default",
+    "prims.convert_element_type.default",
+    "prims.convert_element_type.default"
+  ],
+  "reduction_types": [
+    "mean"
+  ],
+  "num_kernels": 10,
+  "perf": {
+    "B200": {
+      "compiled_us": 37.8,
+      "coord_descent_us": 37.8,
+      "memcpy_sol_us": 8.8,
+      "total_bytes": 12585984
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "hash": "108892bc6e62_8f1de50a",
+  "ops": [
+    "aten.add.Tensor",
+    "aten.add.Tensor",
+    "aten.cat.default",
+    "aten.cat.default",
+    "aten.clone.default",
+    "aten.expand.default",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.mul.Tensor",
+    "aten.neg.default",
+    "aten.neg.default",
+    "aten.permute.default",
+    "aten.permute.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.reshape.default",
+    "aten.slice.Tensor",
+    "aten.slice.Tensor",
+    "aten.slice.Tensor",
+    "aten.slice.Tensor",
+    "aten.unsqueeze.default",
+    "aten.unsqueeze.default",
+    "aten.unsqueeze.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 26,
+  "perf": {
+    "B200": {
+      "compiled_us": 41.1,
+      "coord_descent_us": 40.9,
+      "memcpy_sol_us": 18.4,
+      "total_bytes": 54788096
+    }
+  }
+}

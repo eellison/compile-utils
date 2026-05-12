@@ -1,0 +1,15 @@
+{
+  "hash": "672682f95253_7337c280",
+  "ops": [
+    "aten.cat.default",
+    "aten.expand.default",
+    "aten.ne.Scalar",
+    "aten.slice.Tensor",
+    "aten.slice.Tensor",
+    "aten.slice.Tensor",
+    "aten.sub.Tensor",
+    "aten.sub.Tensor"
+  ],
+  "reduction_types": [],
+  "num_kernels": 8
+}

@@ -1,0 +1,10 @@
+{
+  "hash": "a39b2f4eb12e_afa0359d",
+  "ops": [
+    "aten.full.default",
+    "aten.full.default",
+    "aten.where.self"
+  ],
+  "reduction_types": [],
+  "num_kernels": 3
+}

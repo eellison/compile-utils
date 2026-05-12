@@ -1,0 +1,8 @@
+{
+  "hash": "b0aef1b84a13_d7517139",
+  "ops": [
+    "aten.full.default"
+  ],
+  "reduction_types": [],
+  "num_kernels": 1
+}
