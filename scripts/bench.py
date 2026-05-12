@@ -60,7 +60,33 @@ def load_repro(path):
     return mod.Repro(), mod.make_inputs()
 
 
-def benchmark_one(repro_path, n_warmup=25, n_rep=200):
+def _cuda_graph_time(fn, inputs, n_warmup=10, n_iter=200):
+    """Time a function using CUDA Graph replay (eliminates dispatch overhead)."""
+    import time
+
+    with torch.no_grad():
+        for _ in range(n_warmup):
+            fn(*inputs)
+        torch.cuda.synchronize()
+
+        g = torch.cuda.CUDAGraph()
+        with torch.cuda.graph(g):
+            fn(*inputs)
+        torch.cuda.synchronize()
+
+        for _ in range(5):
+            g.replay()
+        torch.cuda.synchronize()
+
+        start = time.perf_counter()
+        for _ in range(n_iter):
+            g.replay()
+        torch.cuda.synchronize()
+        elapsed = (time.perf_counter() - start) / n_iter * 1e6
+    return elapsed
+
+
+def benchmark_one(repro_path, n_warmup=25, n_rep=200, use_cuda_graph=True):
     mod, inputs = load_repro(repro_path)
 
     with torch.no_grad():
@@ -82,23 +108,29 @@ def benchmark_one(repro_path, n_warmup=25, n_rep=200):
     # Compiled (default heuristics)
     torch._dynamo.reset()
     compiled = torch.compile(mod)
-    with torch.no_grad():
-        for _ in range(3):
-            compiled(*inputs)
-        torch.cuda.synchronize()
-    compiled_ms = do_bench(lambda: compiled(*inputs), warmup=n_warmup, rep=n_rep)
-    compiled_us = compiled_ms * 1000
+    if use_cuda_graph:
+        compiled_us = _cuda_graph_time(compiled, inputs, n_warmup, n_rep)
+    else:
+        with torch.no_grad():
+            for _ in range(3):
+                compiled(*inputs)
+            torch.cuda.synchronize()
+        compiled_ms = do_bench(lambda: compiled(*inputs), warmup=n_warmup, rep=n_rep)
+        compiled_us = compiled_ms * 1000
 
     # Compiled with coordinate descent tuning
     inductor_config.coordinate_descent_tuning = True
     torch._dynamo.reset()
     compiled_cd = torch.compile(mod)
-    with torch.no_grad():
-        for _ in range(3):
-            compiled_cd(*inputs)
-        torch.cuda.synchronize()
-    cd_ms = do_bench(lambda: compiled_cd(*inputs), warmup=n_warmup, rep=n_rep)
-    cd_us = cd_ms * 1000
+    if use_cuda_graph:
+        cd_us = _cuda_graph_time(compiled_cd, inputs, n_warmup, n_rep)
+    else:
+        with torch.no_grad():
+            for _ in range(3):
+                compiled_cd(*inputs)
+            torch.cuda.synchronize()
+        cd_ms = do_bench(lambda: compiled_cd(*inputs), warmup=n_warmup, rep=n_rep)
+        cd_us = cd_ms * 1000
     inductor_config.coordinate_descent_tuning = False
 
     print(f"\nKernel data: {total_bytes / 1024:.1f} KB (read+write)")
@@ -122,10 +154,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="repro.py file or directory containing regions")
     parser.add_argument("--update-meta", action="store_true", help="Write results to meta.json")
+    parser.add_argument("--no-cuda-graph", action="store_true", help="Use do_bench instead of CUDA graph replay")
     args = parser.parse_args()
 
+    use_cg = not args.no_cuda_graph
+
     if os.path.isfile(args.path):
-        result = benchmark_one(args.path)
+        result = benchmark_one(args.path, use_cuda_graph=use_cg)
         if args.update_meta:
             meta_path = os.path.join(os.path.dirname(args.path), "meta.json")
             if os.path.exists(meta_path):
@@ -147,7 +182,7 @@ def main():
             rel = os.path.relpath(os.path.dirname(repro), args.path)
             print(f"--- {rel} ---")
             try:
-                benchmark_one(repro)
+                benchmark_one(repro, use_cuda_graph=use_cg)
             except Exception as e:
                 print(f"  FAILED: {e}")
             print()
