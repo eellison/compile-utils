@@ -52,9 +52,6 @@ Gap (default / SOL):     0.91x
 Gap (CD / SOL):          0.82x
 ```
 
-Key metric: **compiled / coord_descent**. If this ratio is >1.15x, the default
-heuristics are leaving perf on the table and the kernel is "actionable."
-
 `benchmark_all.py` runs all repros in a model dir and writes `benchmark_results.json`.
 
 ## Structure
