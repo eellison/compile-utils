@@ -16,12 +16,12 @@
     "amax",
     "sum"
   ],
-  "num_kernels": 10,
+  "num_kernels": 2,
   "perf": {
     "B200": {
-      "compiled_us": 137.5,
-      "coord_descent_us": 137.5,
-      "memcpy_sol_us": 167.7,
+      "compiled_us": 156.7,
+      "coord_descent_us": 142.7,
+      "memcpy_sol_us": 91.4,
       "total_bytes": 537919488
     }
   }
