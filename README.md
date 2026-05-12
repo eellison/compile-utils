@@ -113,12 +113,5 @@ python scripts/sol_gap.py investigate models/inference/.../repro.py
 
 ## Tracking improvements
 
-Actionable kernels (compiled/coord_descent > 1.15x) are tracked as GitHub issues
-on this repo. Each issue links to the repro, shows perf numbers, and describes
-the suspected heuristic problem. Fixes land in pytorch/pytorch.
-
-Labels:
-- `actionable` — kernel with confirmed headroom
-- `reduction_hint` — wrong reduction hint (INNER/OUTER/DEFAULT)
-- `tiling` — suboptimal block sizes or num_warps
-- `num_kernels` — too many kernel launches, missed fusion opportunity
+Kernels with headroom are tracked as GitHub issues on this repo.
+Fixes land in pytorch/pytorch.
