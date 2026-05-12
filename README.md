@@ -16,24 +16,26 @@ This repo contains:
 
 ## How extraction works
 
-`extract_reductions.py` hooks into inductor's scheduler at compile time. For each
-fused kernel region it:
+`extract_reductions.py` hooks `inductor_config.post_grad_custom_pre_pass` to capture
+the post-decomposition FX graph, then uses `CapabilityBasedPartitioner` with
+`is_fusible_node` to partition it into fusion regions — the same groupings inductor
+would compile into individual kernels. For each region it:
 
-1. Captures the scheduler nodes (reductions + pointwise ops in the fusion group)
-2. Traces back to the original FX graph to find the minimal subgraph
-3. Extracts that subgraph as a standalone `torch.nn.Module` with synthetic inputs
+1. Extracts the partition subgraph as a standalone `torch.nn.Module` with inputs
    matching the original shapes/dtypes/strides
-4. Wraps it in a runnable script with a `benchmark()` function that measures:
+2. Merges reduction partitions that share common inputs (mix-order reduction)
+3. Wraps it in a runnable script with a `benchmark()` function that measures:
    - Compiled (default heuristics) time
    - Coord-descent tuned time (best config, same kernel structure)
    - Memcopy SOL at the same transfer size (bandwidth ceiling)
+   - Number of Triton kernels generated
 
-Each region gets a content-addressed hash (from the FX graph structure + shapes),
+Each region gets a content-addressed hash (FX op pattern + input shapes),
 so re-extracting the same model produces stable directory names.
 
 `extract_vllm.py` drives this for HuggingFace/vLLM models — instantiates the model
 from config (no weights needed), creates dummy inputs, and compiles with the
-extraction hook active.
+capture hook active.
 
 ## How benchmarking works
 
