@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+output/
+benchmark_results.json
+*_investigation.txt
+investigation_summary.json
+
+*.log
