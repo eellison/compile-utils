@@ -1,81 +1,157 @@
 # compile-utils
 
-Standalone repros and benchmarking tools for torch.compile/inductor kernel regions.
+Standalone repro corpus and benchmarking utilities for `torch.compile` /
+TorchInductor fusion regions.
 
-## What this is
+This repository is meant to make kernel issues easy to reproduce without
+re-running full models. Each checked-in repro is a small `torch.nn.Module`
+extracted from a real model graph, with synthetic inputs matching the captured
+shape, dtype, and stride metadata.
 
-When you `torch.compile` a model, inductor splits computation into fused kernel
-regions. Each region becomes a Triton (or C++) kernel. Some of those kernels are
-slower than they should be — the heuristics pick the wrong reduction strategy,
-tiling config, or fail to fuse things that should be fused.
+## What Is Checked In
 
-This repo contains:
-1. **Extracted repros** — standalone `.py` files for every kernel region of a model
-2. **Benchmark data** — measured perf vs coord-descent (best achievable with same code shape) and memcopy SOL
-3. **Tooling** — scripts to extract, benchmark, and diagnose
+The current corpus has 119 repros from model captures:
 
-## How extraction works
+| Area | Model directory | Repros |
+| --- | --- | ---: |
+| Inference | `models/inference/vllm_Qwen_Qwen3-0.6B` | 9 |
+| Inference | `models/inference/vllm_deepseek-ai_DeepSeek-V3` | 28 |
+| Inference | `models/inference/vllm_mistralai_Mistral-7B-Instruct-v0.3` | 9 |
+| Inference | `models/inference/vllm_openai_gpt-oss-20b` | 15 |
+| Training | `models/training/dynamo_AlbertForMaskedLM` | 32 |
+| Training | `models/training/dynamo_BertForMaskedLM` | 26 |
 
-`extract_reductions.py` hooks `inductor_config.post_grad_custom_pre_pass` to capture
-the post-decomposition FX graph, then uses `CapabilityBasedPartitioner` with
-`is_fusible_node` to partition it into fusion regions — the same groupings inductor
-would compile into individual kernels. For each region it:
+Each model directory contains one directory per fusion region:
 
-1. Extracts the partition subgraph as a standalone `torch.nn.Module` with inputs
-   matching the original shapes/dtypes/strides
-2. Merges reduction partitions that share common inputs (mix-order reduction)
-3. Wraps it in a runnable script with a `benchmark()` function that measures:
-   - Compiled (default heuristics) time
-   - Coord-descent tuned time (best config, same kernel structure)
-   - Memcopy SOL at the same transfer size (bandwidth ceiling)
-   - Number of Triton kernels generated
-
-Each region gets a content-addressed hash (FX op pattern + input shapes),
-so re-extracting the same model produces stable directory names.
-
-`extract_vllm.py` drives this for HuggingFace/vLLM models — instantiates the model
-from config (no weights needed), creates dummy inputs, and compiles with the
-capture hook active.
-
-## How benchmarking works
-
-Each `repro.py` is self-contained. Running it directly prints perf numbers:
-
-```
-$ python models/inference/vllm_openai_gpt-oss-20b/region_011_.../repro.py
-
-Kernel data: 525312.0 KB (read+write)
-Compiled (default):      152.3 us
-Compiled (coord descent):137.8 us
-Memcopy SOL (same size): 167.7 us  (6413.4 GB/s)
-Gap (default / SOL):     0.91x
-Gap (CD / SOL):          0.82x
+```text
+models/inference/vllm_openai_gpt-oss-20b/
+  region_011_amax_sum_c0c1b95fe65e_63302950/
+    repro.py
+    meta.json
 ```
 
-`benchmark_all.py` runs all repros in a model dir and writes `benchmark_results.json`.
+`repro.py` defines:
 
-## Structure
+- `Repro`: the extracted module
+- `make_inputs()`: synthetic CUDA inputs for the captured signature
 
+`meta.json` records the stable hash, operator list, reduction kinds, current
+kernel count, and optional benchmark results by hardware.
+
+## Why This Exists
+
+When Inductor compiles a model, it decomposes the model graph, partitions
+fusible ATen operators, and lowers each partition to generated kernels. A full
+model is often too large and noisy for compiler iteration. These repros let us:
+
+- reproduce a single partition without model weights
+- measure default Inductor codegen against coord-descent tuned codegen
+- compare kernel time to same-size memcopy SOL
+- inspect missed fusion, split regions, reduction strategy, and tiling issues
+- keep a stable corpus while compiler changes evolve
+
+## Quickstart
+
+Benchmark one repro:
+
+```bash
+python scripts/bench.py \
+  models/inference/vllm_openai_gpt-oss-20b/region_011_amax_sum_c0c1b95fe65e_63302950/repro.py
 ```
-models/
-  inference/           # inference workloads (latency-sensitive)
-    vllm_openai_gpt-oss-20b/
-      region_011_amax_sum_<hash>/
-        repro.py       # standalone, runnable, no repo imports
-        meta.json      # hash, ops, num_kernels, perf by hardware
-  training/            # training workloads (throughput-sensitive)
-    dynamo_AlbertForMaskedLM/
-      ...
 
-scripts/
-  sol_gap.py           # unified CLI: extract, bench, report, investigate
-  extract_reductions.py  # core extraction hook
-  extract_vllm.py      # model instantiation for vLLM/HF models
-  benchmark_all.py     # batch benchmark runner
-  investigate_kernel.py  # dump generated Triton code for a region
+Benchmark every repro under a model directory:
+
+```bash
+python scripts/bench.py models/inference/vllm_openai_gpt-oss-20b
 ```
 
-## meta.json
+Update a region's `meta.json` with fresh B200 numbers:
+
+```bash
+python scripts/bench.py \
+  models/inference/vllm_openai_gpt-oss-20b/region_011_amax_sum_c0c1b95fe65e_63302950/repro.py \
+  --update-meta
+```
+
+Use do_bench instead of CUDA graph replay:
+
+```bash
+python scripts/bench.py models/training/dynamo_BertForMaskedLM --no-cuda-graph
+```
+
+## Requirements
+
+The checked-in repros are self-contained apart from runtime dependencies:
+
+- a CUDA-capable PyTorch build
+- Triton
+- a GPU visible to PyTorch
+
+Extraction scripts also need the model-side dependencies they instantiate
+(`transformers`, vLLM-relevant configs, and optionally a PyTorch checkout for
+`benchmarks/dynamo` helpers). `PYTORCH_DIR` defaults to `/tmp/pytorch-work` when
+a PyTorch checkout is needed.
+
+## Extraction
+
+The active extraction path is `scripts/extract_reductions.py`. Its ATen mode
+captures post-grad FX graphs through `inductor_config.post_grad_custom_pre_pass`,
+then partitions with Inductor's `is_fusible_node` rules into kernel-sized
+regions. Training captures include forward regions and, when available,
+backward regions.
+
+For vLLM/HuggingFace-style inference captures:
+
+```bash
+python scripts/extract_vllm.py "openai/gpt-oss-20b" --inference-only --device 0
+```
+
+List the configured vLLM-oriented model set:
+
+```bash
+python scripts/extract_vllm.py --list
+```
+
+For PyTorch benchmark/dynamo HuggingFace captures:
+
+```bash
+python scripts/extract_reductions.py dynamo:BertForMaskedLM --mode aten
+python scripts/extract_reductions.py dynamo:list
+```
+
+New extraction output is written under generated `output/` directories. Inspect
+new captures before promoting them into `models/inference/` or
+`models/training/`.
+
+## Benchmarking
+
+`scripts/bench.py` is the supported benchmark entry point. For each repro it:
+
+1. Loads `Repro` and `make_inputs()`.
+2. Runs eager once to count input and output bytes.
+3. Compiles the module and counts generated kernel launches.
+4. Measures same-size memcopy SOL with `triton.testing.do_bench`.
+5. Measures default Inductor compiled time.
+6. Measures coord-descent tuned compiled time.
+
+By default compiled timings use CUDA graph replay to reduce Python dispatch
+noise. `--no-cuda-graph` switches compiled timing back to `do_bench`.
+
+Example output:
+
+```text
+Kernel data: 12345.0 KB (read+write)
+Kernels generated: 2
+Memcopy SOL (same size):      8.1 us
+Compiled (default):          12.4 us
+Compiled (coord desc):       10.9 us
+Gap (default / SOL):          1.53x
+Gap (CD / SOL):               1.35x
+```
+
+## Metadata
+
+`meta.json` is intentionally small and stable:
 
 ```json
 {
@@ -94,23 +170,24 @@ scripts/
 }
 ```
 
-## Usage
+Keep benchmark values hardware-scoped. Do not overwrite one GPU generation's
+numbers with another GPU generation's numbers under the same key.
 
-```bash
-# Extract regions from a model
-python scripts/sol_gap.py extract --model "openai/gpt-oss-20b" --mode inference
+## Directory Guides
 
-# Benchmark all regions in a model dir
-python scripts/sol_gap.py bench --dir models/inference/vllm_openai_gpt-oss-20b
+- `models/README.md`: corpus layout and promotion rules
+- `models/inference/README.md`: inference model captures
+- `models/training/README.md`: training model captures
+- `scripts/README.md`: supported scripts and workflows
 
-# Show gaps sorted by severity
-python scripts/sol_gap.py report --min-gap 1.3
+## Generated Files
 
-# Investigate a specific kernel (dumps generated Triton)
-python scripts/sol_gap.py investigate models/inference/.../repro.py
-```
+Generated extraction output, benchmark summaries, `__pycache__`, and
+investigation logs should stay out of git. The checked-in corpus should contain
+only curated model directories, region `repro.py` files, `meta.json`, and docs.
 
-## Tracking improvements
+## Tracking Improvements
 
-Kernels with headroom are tracked as GitHub issues on this repo.
-Fixes land in pytorch/pytorch.
+Use GitHub issues for kernels with clear compiler headroom or correctness
+failures. Fixes usually land in `pytorch/pytorch`; this repo keeps the small
+repros and measurement history needed to validate those fixes.
